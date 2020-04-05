@@ -4,11 +4,12 @@ import json
 import time
 from multiprocessing import *
 import schedule
+from boto.s3.connection import S3Connection
 
-API_KEY = "1103395186:AAEjPT2Yo0Nc5KSGoJgYuDAbQdIXGTix0ys"
+API_KEY = S3Connection(os.environ['TOKEN'])
 bot = telebot.TeleBot(API_KEY)
 ff = None
-USERID = 377263029
+CREATOR_CHAT_ID = S3Connection(os.environ['CREATOR_ID'])
 
 
 def get_photo():
