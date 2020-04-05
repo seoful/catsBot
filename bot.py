@@ -124,8 +124,13 @@ def admin(message):
         to_all(message.chat.id,(" ".join(args[1:])))
 
 
-# schedule.every(1).minute.do(send_photo_every_minute)
-schedule.every().day.at("04:00").do(scheduled_photo)
+@bot.message_handler(func=lambda msg: msg.chat.id == CREATOR_CHAT_ID)
+def creator(message):
+    args = message.text.split(" ")[1:]
+    command = args[0]
+
+
+schedule.every().day.at("20:06").do(scheduled_photo)
 schedule.every().day.at("19:01").do(download_photo)
 
 if __name__ == '__main__':
