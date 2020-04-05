@@ -33,10 +33,10 @@ def download_photo():
 def scheduled_photo():
     for chat_id in get_ids():
         if photo is not None:
-            bot.send_photo(chat_id, photo)
+            bot.send_photo(chat_id, photo,"Good morning!")
         else:
             bot.send_message(chat_id,
-                             "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.")
+                             "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.However,good morning!")
 
 
 def to_all(admin_id,caption="from admin with love"):
