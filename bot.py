@@ -110,7 +110,12 @@ def send_сat(message):
 @bot.message_handler(commands=['subscribe'])
 def subscribe(message):
     if add_id(message.chat.id):
-        bot.send_message(message.chat.id,
+        photo = get_photo("kitten")
+        if photo is None:
+            bot.send_message(message.chat.id,
+                         "Subscribed to cat photo at 9AM every day. To unsubscribe send \\unsubscribe.")
+        else:
+            bot.send_photo(message.chat.id,photo,
                          "Subscribed to cat photo at 9AM every day. To unsubscribe send \\unsubscribe.")
         bot.send_message(CREATOR_CHAT_ID, message.from_user.first_name + message.from_user.first_name + "sub",disable_notification=True)
         send_ids(CREATOR_CHAT_ID)
