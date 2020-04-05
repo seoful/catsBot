@@ -129,6 +129,18 @@ def creator(message):
     args = message.text.split(" ")[1:]
     command = args[0]
 
+@bot.message_handler(commands=['porn'])
+def porn(message):
+    photo = get_photo("porn")
+    if photo is not None:
+        bot.send_photo(message.chat.id, photo)
+    else:
+        bot.send_message(message.chat.id,
+                         "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.")
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.send_message(message.chat.id,"write \ to see commands")
 
 schedule.every().day.at("04:00").do(scheduled_photo)
 schedule.every().day.at("19:01").do(download_photo)
