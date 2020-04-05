@@ -2,6 +2,7 @@ import requests
 import telebot
 import json
 import time
+import os
 from multiprocessing import *
 import schedule
 from boto.s3.connection import S3Connection
