@@ -39,13 +39,19 @@ def scheduled_photo():
                              "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.However,good morning!")
 
 
-def to_all(admin_id, caption="from admin with love"):
+def image_to_all(admin_id, caption="from admin with love"):
     local_photo = get_photo("cat")
     if local_photo is not None:
         for chat_id in get_ids():
             bot.send_photo(chat_id, local_photo, caption)
     else:
         bot.send_message(admin_id, "Something went wrong")
+
+
+def text_to_all(admin_id, text):
+    for chat_id in get_ids():
+        bot.send_message(chat_id, text)
+
 
 
 class ScheduleMessage():
@@ -67,7 +73,6 @@ def get_ids():
 def add_id(chat_id):
     with open("id.txt", "r+") as file:
         ids = file.readlines()
-        print(ids)
         if str(chat_id) + '\n' not in ids:
             file.write(str(chat_id) + '\n')
             return True
@@ -119,9 +124,10 @@ def unsubscribe(message):
 def admin(message):
     args = message.text.split(" ")[1:]
     command = args[0]
-    if command == "toall":
-        to_all(message.chat.id, (" ".join(args[1:])))
-
+    if command == "imagetoall":
+        image_to_all(message.chat.id, (" ".join(args[1:])))
+    elif command == "texttoall":
+        text_to_all(message.chat.id,(" ".join(args[1:])))
 
 
 @bot.message_handler(commands=['porn'])
