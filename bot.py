@@ -33,17 +33,17 @@ def download_photo():
 def scheduled_photo():
     for chat_id in get_ids():
         if photo is not None:
-            bot.send_photo(chat_id, photo,"Good morning!")
+            bot.send_photo(chat_id, photo, "Good morning!")
         else:
             bot.send_message(chat_id,
                              "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.However,good morning!")
 
 
-def to_all(admin_id,caption="from admin with love"):
+def to_all(admin_id, caption="from admin with love"):
     local_photo = get_photo("cat")
     if local_photo is not None:
         for chat_id in get_ids():
-            bot.send_photo(chat_id, local_photo,caption)
+            bot.send_photo(chat_id, local_photo, caption)
     else:
         bot.send_message(admin_id, "Something went wrong")
 
@@ -116,18 +116,13 @@ def unsubscribe(message):
 
 
 @bot.message_handler(commands=['admin'])
-@bot.message_handler(func=lambda msg: msg.chat.id == CREATOR_CHAT_ID)
 def admin(message):
     args = message.text.split(" ")[1:]
     command = args[0]
     if command == "toall":
-        to_all(message.chat.id,(" ".join(args[1:])))
+        to_all(message.chat.id, (" ".join(args[1:])))
 
 
-@bot.message_handler(func=lambda msg: msg.chat.id == CREATOR_CHAT_ID)
-def creator(message):
-    args = message.text.split(" ")[1:]
-    command = args[0]
 
 @bot.message_handler(commands=['porn'])
 def porn(message):
@@ -138,9 +133,11 @@ def porn(message):
         bot.send_message(message.chat.id,
                          "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.")
 
+
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id,"write \ to see commands")
+    bot.send_message(message.chat.id, "write \ to see commands")
+
 
 schedule.every().day.at("04:00").do(scheduled_photo)
 schedule.every().day.at("19:01").do(download_photo)
