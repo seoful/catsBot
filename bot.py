@@ -53,7 +53,6 @@ def text_to_all(admin_id, text):
         bot.send_message(chat_id, text)
 
 
-
 class ScheduleMessage():
     def try_send_schedule():
         while True:
@@ -93,6 +92,11 @@ def delete_id(chat_id):
         return False
 
 
+def send_ids(admin_id):
+    with open("id.txt") as file:
+        bot.send_document(admin_id, file, disable_notification=True)
+
+
 @bot.message_handler(commands=['cat'])
 def send_сat(message):
     photo = get_photo("cat")
@@ -108,6 +112,9 @@ def subscribe(message):
     if add_id(message.chat.id):
         bot.send_message(message.chat.id,
                          "Subscribed to cat photo at 9AM every day. To unsubscribe send \\unsubscribe.")
+        bot.send_message(CREATOR_CHAT_ID, message.from_user.first_name + message.from_user.first_name + "sub",disable_notification=True)
+        send_ids(CREATOR_CHAT_ID)
+
     else:
         bot.send_message(message.chat.id, "You are already subscribed")
 
@@ -115,7 +122,11 @@ def subscribe(message):
 @bot.message_handler(commands=['unsubscribe'])
 def unsubscribe(message):
     if delete_id(message.chat.id):
-        bot.send_message(message.chat.id, "You are now not subscribed")
+        with open("sad_cat.jpg","rb") as file:
+            bot.send_photo(message.chat.id,file, "You are now not subscribed")
+        bot.send_message(CREATOR_CHAT_ID, message.from_user.first_name + message.from_user.first_name + "unsub",disable_notification=True)
+        send_ids(CREATOR_CHAT_ID)
+
     else:
         bot.send_message(message.chat.id, "You were not subscribed")
 
@@ -127,7 +138,9 @@ def admin(message):
     if command == "imagetoall":
         image_to_all(message.chat.id, (" ".join(args[1:])))
     elif command == "texttoall":
-        text_to_all(message.chat.id,(" ".join(args[1:])))
+        text_to_all(message.chat.id, (" ".join(args[1:])))
+    elif command == "sendids":
+        send_ids(message.chat.id)
 
 
 @bot.message_handler(commands=['porn'])
