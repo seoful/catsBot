@@ -130,7 +130,7 @@ def creator(message):
     command = args[0]
 
 
-schedule.every().day.at("20:06").do(scheduled_photo)
+schedule.every().day.at("04:00").do(scheduled_photo)
 schedule.every().day.at("19:01").do(download_photo)
 
 if __name__ == '__main__':
