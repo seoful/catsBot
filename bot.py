@@ -113,7 +113,7 @@ def subscribe(message):
         photo = get_photo("kitten")
         if photo is None:
             bot.send_message(message.chat.id,
-                         "Subscribed to cat photo at 9AM every day. To unsubscribe send \\unsubscribe.")
+                         "Thank you for subscribing to cat photo at 9AM every day. To unsubscribe send \\unsubscribe.")
         else:
             bot.send_photo(message.chat.id,photo,
                          "Subscribed to cat photo at 9AM every day. To unsubscribe send \\unsubscribe.")
