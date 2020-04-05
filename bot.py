@@ -2,6 +2,7 @@ import requests
 import telebot
 import json
 import time
+import datetime
 from multiprocessing import *
 import schedule
 
@@ -11,9 +12,9 @@ ff = None
 CREATOR_CHAT_ID = 377263029
 
 
-def get_photo():
+def get_photo(request):
     response = requests.get(
-        "https://api.unsplash.com/photos/random?client_id=xqeRzqIeuPGTeFeRtw3_WvrAiGuce6p4-eTU9BuWZUs&query=cat&count=1")
+        "https://api.unsplash.com/photos/random?client_id=xqeRzqIeuPGTeFeRtw3_WvrAiGuce6p4-eTU9BuWZUs&count=1&query="+request)
     if (response.ok):
         response = json.loads(response.text)
         response = response[0]["urls"]["regular"]
@@ -69,12 +70,12 @@ def delete_id(chat_id):
 
 
 @bot.message_handler(commands=['cat'])
-def send_photo(message):
-    photo = get_photo()
-    if photo != None:
-        bot.send_photo(message.chat.id, photo)
+def send_сat(message):
+    photo = get_photo("cat")
+    if photo is not None:
+        bot.send_photo(message.chat.id, photo,str(datetime.datetime.now().hour)+str(datetime.datetime.now().minute))
     else:
-        bot.send_message(message.chat.id, "Error getting photo.Sorry(")
+        bot.send_message(message.chat.id, "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.")
 
 
 @bot.message_handler(commands=['subscribe'])
@@ -94,6 +95,7 @@ def unsubscribe(message):
 
 
 schedule.every(1).minute.do(send_photo_every_minute)
+
 
 if __name__ == '__main__':
     ScheduleMessage.start_process()
