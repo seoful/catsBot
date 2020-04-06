@@ -145,7 +145,7 @@ def send_ids(admin_id):
 
 @bot.message_handler(content_types=['text'])
 def log(message):
-    print(str(message.from_id.username) + " " + message.text)
+    print(str(message.from_user.username) + " " + message.text)
 
 
 @bot.message_handler(commands=['start', 'help'])
