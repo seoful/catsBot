@@ -206,7 +206,7 @@ def start(message):
     bot.send_message(message.chat.id, "Write \ to see commands")
 
 
-schedule.every().day.at("11:15").do(scheduled_photo)
+schedule.every().day.at("04:00").do(scheduled_photo)
 
 if __name__ == '__main__':
     ScheduleMessage.start_process()
