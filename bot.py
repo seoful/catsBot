@@ -7,7 +7,7 @@ from multiprocessing import *
 import schedule
 
 API_KEY = "1103395186:AAEjPT2Yo0Nc5KSGoJgYuDAbQdIXGTix0ys"
-bot = telebot.TeleBot(API_KEY,threaded=False)
+bot = telebot.TeleBot(API_KEY, threaded=False)
 CREATOR_CHAT_ID = 377263029
 AUTHOR_MARK = "Photo by <a href=\"{0}?&utm_source=CatSender&utm_medium=referral\">{1}</a> on <a " \
               "href=\"https://unsplash.com/?utm_source=CatsSendere&utm_medium=referral\">Unsplash</a> "
@@ -69,10 +69,11 @@ def image_to_all(admin_id, caption="from admin with love"):
     if len(ids) > 0:
         file_id = send_photo(admin_id, local_photo, admin_id, caption,
                              "something went wrong")
-    ids.remove(str(admin_id) +"\n")
+    ids.remove(str(admin_id) + "\n")
     if file_id != "error":
         for chat_id in ids:
             send_photo(chat_id, local_photo, chat_id, caption)
+
 
 def text_to_all(admin_id, text):
     for chat_id in get_ids():
@@ -142,16 +143,14 @@ def send_ids(admin_id):
             bot.send_document(admin_id, file, disable_notification=True)
 
 
-@bot.message_handler(commands=['cat'])
-def send_cat(message):
-    photo = get_photo("cat")
-    send_photo(message.chat.id, photo, message.chat.id,
-               error_message="Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.")
-    # if photo is not None:
-    #     bot.send_photo(message.chat.id, photo)
-    # else:
-    #     bot.send_message(message.chat.id,
-    #                      "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.")
+@bot.message_handler(content_types=['text'])
+def log(message):
+    print(str(message.from_id.username) + " " + message.text)
+
+
+@bot.message_handler(commands=['start', 'help'])
+def start(message):
+    bot.send_message(message.chat.id, "Write / to see commands")
 
 
 @bot.message_handler(commands=['subscribe'])
@@ -182,6 +181,18 @@ def unsubscribe(message):
         bot.send_message(message.chat.id, "You were not subscribed")
 
 
+@bot.message_handler(commands=['cat'])
+def send_cat(message):
+    photo = get_photo("cat")
+    send_photo(message.chat.id, photo, message.chat.id,
+               error_message="Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.")
+    # if photo is not None:
+    #     bot.send_photo(message.chat.id, photo)
+    # else:
+    #     bot.send_message(message.chat.id,
+    #                      "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.")
+
+
 @bot.message_handler(commands=['admin'])
 def admin(message):
     args = message.text.split(" ")[1:]
@@ -192,18 +203,6 @@ def admin(message):
         text_to_all(message.chat.id, (" ".join(args[1:])))
     elif command == "count":
         count(message.chat.id)
-
-
-@bot.message_handler(commands=['porn'])
-def porn(message):
-    photo = get_photo("sex")
-    send_photo(message.chat.id, photo, message.chat.id,
-               error_message="Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.")
-
-
-@bot.message_handler(commands=['start'])
-def start(message):
-    bot.send_message(message.chat.id, "Write \ to see commands")
 
 
 schedule.every().day.at("04:00").do(scheduled_photo)
