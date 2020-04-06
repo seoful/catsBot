@@ -6,12 +6,12 @@ import db
 from multiprocessing import *
 import schedule
 
-
 API_KEY = "1103395186:AAEjPT2Yo0Nc5KSGoJgYuDAbQdIXGTix0ys"
 bot = telebot.TeleBot(API_KEY)
 CREATOR_CHAT_ID = 377263029
 AUTHOR_MARK = "Photo by <a href=\"{0}?&utm_source=CatSender&utm_medium=referral\">{1}</a> on <a " \
               "href=\"https://unsplash.com/?utm_source=CatsSendere&utm_medium=referral\">Unsplash</a> "
+SAD_ID = "AgACAgIAAxkDAAIEtl6LASyDNzPq99scOMgDFK9niibeAAJQrDEbqYBZSARMTDqu88gxHILBDwAEAQADAgADbQADKmAGAAEYBA"
 
 
 def get_photo(request):
@@ -40,26 +40,39 @@ def download_photo():
 
 def send_photo(chat_id, photo, error_chat_id, caption="", error_message=""):
     if photo["file"] is not None:
-        response = bot.send_photo(chat_id, photo["file"],
-                       caption + "\n" + AUTHOR_MARK.format(
-                           photo["username"], photo["name"]),
-                       parse_mode="HTML")
+        return bot.send_photo(chat_id, photo["file"],
+                              caption + "\n" + AUTHOR_MARK.format(
+                                  photo["username"], photo["name"]),
+                              parse_mode="HTML").photo[0].file_id
     else:
         bot.send_message(chat_id, error_message)
+        return "error"
 
 
 def scheduled_photo():
-    for chat_id in get_ids():
-        send_photo(chat_id, photo, chat_id, "Good morning!",
-                   "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.However,have a nice "
-                   "day!")
+    ids = get_ids()
+    if len(ids) > 0:
+        file_id = send_photo(ids[0], photo, ids[0], "Good morning!",
+                             "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.However,have a nice "
+                             "day!")
+    ids.pop(0)
+    if file_id != "error":
+        for chat_id in ids:
+            send_photo(chat_id, photo, chat_id, "Good morning!",
+                       "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.However,have a nice "
+                       "day!")
 
 
 def image_to_all(admin_id, caption="from admin with love"):
     local_photo = get_photo("cat")
-    for chat_id in get_ids():
-        send_photo(chat_id, local_photo, admin_id, caption, "Something went wrong")
-
+    ids = get_ids()
+    if len(ids) > 0:
+        file_id = send_photo(admin_id, local_photo, admin_id, caption,
+                             "something went wrong")
+    ids.remove(str(admin_id) +"\n")
+    if file_id != "error":
+        for chat_id in ids:
+            send_photo(chat_id, local_photo, chat_id, caption)
 
 def text_to_all(admin_id, text):
     for chat_id in get_ids():
@@ -67,7 +80,7 @@ def text_to_all(admin_id, text):
 
 
 def count(admin_id):
-    bot.send_message(admin_id,len(get_ids()))
+    bot.send_message(admin_id, len(get_ids()))
 
 
 class ScheduleMessage():
@@ -146,8 +159,8 @@ def subscribe(message):
     if add_id(message.chat.id):
         photo = get_photo("cat")
         send_photo(message.chat.id, photo, message.chat.id,
-                   "Thank you for subscribing to cat photo at 9AM every day. To unsubscribe send \\unsubscribe.",
-                   "Subscribed to cat photo at 9AM every day. To unsubscribe send \\unsubscribe.")
+                   "Thank you for subscribing to cat photo at 9AM every day.",
+                   "Subscribed to cat photo at 9AM every day.")
 
         bot.send_message(CREATOR_CHAT_ID, "@" + message.from_user.username + " sub",
                          disable_notification=True)
@@ -160,8 +173,7 @@ def subscribe(message):
 @bot.message_handler(commands=['unsubscribe'])
 def unsubscribe(message):
     if delete_id(message.chat.id):
-        with open("sad_cat.jpg", "rb") as file:
-            bot.send_photo(message.chat.id, file, "You are now not subscribed")
+        bot.send_photo(message.chat.id, SAD_ID, "You are now not subscribed")
 
         bot.send_message(CREATOR_CHAT_ID, "@" + message.from_user.username + " unsub",
                          disable_notification=True)
@@ -175,9 +187,9 @@ def unsubscribe(message):
 def admin(message):
     args = message.text.split(" ")[1:]
     command = args[0]
-    if command == "imagetoall":
+    if command == "imageall":
         image_to_all(message.chat.id, (" ".join(args[1:])))
-    elif command == "texttoall":
+    elif command == "textall":
         text_to_all(message.chat.id, (" ".join(args[1:])))
     elif command == "count":
         count(message.chat.id)
@@ -192,7 +204,7 @@ def porn(message):
 
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(message.chat.id, "write \ to see commands")
+    bot.send_message(message.chat.id, "Write \ to see commands")
 
 
 schedule.every().day.at("03:59").do(download_photo)
