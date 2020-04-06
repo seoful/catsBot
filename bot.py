@@ -7,7 +7,7 @@ from multiprocessing import *
 import schedule
 
 API_KEY = "1103395186:AAEjPT2Yo0Nc5KSGoJgYuDAbQdIXGTix0ys"
-bot = telebot.TeleBot(API_KEY)
+bot = telebot.TeleBot(API_KEY,threaded=False)
 CREATOR_CHAT_ID = 377263029
 AUTHOR_MARK = "Photo by <a href=\"{0}?&utm_source=CatSender&utm_medium=referral\">{1}</a> on <a " \
               "href=\"https://unsplash.com/?utm_source=CatsSendere&utm_medium=referral\">Unsplash</a> "
@@ -162,7 +162,7 @@ def subscribe(message):
                    "Thank you for subscribing to cat photo at 9AM every day.",
                    "Subscribed to cat photo at 9AM every day.")
 
-        bot.send_message(CREATOR_CHAT_ID, "@" + message.from_user.username + " sub",
+        bot.send_message(CREATOR_CHAT_ID, "@" + str(message.from_user.username) + " sub",
                          disable_notification=True)
         # send_ids(CREATOR_CHAT_ID)
 
@@ -175,10 +175,9 @@ def unsubscribe(message):
     if delete_id(message.chat.id):
         bot.send_photo(message.chat.id, SAD_ID, "You are now not subscribed")
 
-        bot.send_message(CREATOR_CHAT_ID, "@" + message.from_user.username + " unsub",
+        bot.send_message(CREATOR_CHAT_ID, "@" + str(message.from_user.username) + " unsub",
                          disable_notification=True)
         # send_ids(CREATOR_CHAT_ID)
-
     else:
         bot.send_message(message.chat.id, "You were not subscribed")
 
