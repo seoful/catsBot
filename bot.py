@@ -196,7 +196,7 @@ def admin(message):
 
 @bot.message_handler(commands=['porn'])
 def porn(message):
-    photo = get_photo("porn")
+    photo = get_photo("sex")
     send_photo(message.chat.id, photo, message.chat.id,
                error_message="Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.")
 
