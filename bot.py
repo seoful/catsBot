@@ -10,7 +10,7 @@ API_KEY = "1103395186:AAEjPT2Yo0Nc5KSGoJgYuDAbQdIXGTix0ys"
 bot = telebot.TeleBot(API_KEY, threaded=False)
 CREATOR_CHAT_ID = 377263029
 AUTHOR_MARK = "Photo by <a href=\"{0}?&utm_source=CatSender&utm_medium=referral\">{1}</a> on <a " \
-              "href=\"https://unsplash.com/?utm_source=CatsSendere&utm_medium=referral\">Unsplash</a> "
+              "href=\"https://unsplash.com/?utm_source=CatSender&utm_medium=referral\">Unsplash</a> "
 SAD_ID = "AgACAgIAAxkDAAIEtl6LASyDNzPq99scOMgDFK9niibeAAJQrDEbqYBZSARMTDqu88gxHILBDwAEAQADAgADbQADKmAGAAEYBA"
 
 
