@@ -34,8 +34,7 @@ def get_photo(request):
 
 
 def download_photo():
-    global photo
-    photo = get_photo("cat")
+    return get_photo("cat")
 
 
 def send_photo(chat_id, photo, error_chat_id, caption="", error_message=""):
@@ -50,6 +49,7 @@ def send_photo(chat_id, photo, error_chat_id, caption="", error_message=""):
 
 
 def scheduled_photo():
+    photo = download_photo()
     ids = get_ids()
     if len(ids) > 0:
         file_id = send_photo(ids[0], photo, ids[0], "Good morning!",
@@ -206,8 +206,7 @@ def start(message):
     bot.send_message(message.chat.id, "Write \ to see commands")
 
 
-schedule.every().day.at("04:10").do(download_photo)
-schedule.every().day.at("04:09").do(scheduled_photo)
+schedule.every().day.at("11:15").do(scheduled_photo)
 
 if __name__ == '__main__':
     ScheduleMessage.start_process()
