@@ -143,18 +143,19 @@ def send_ids(admin_id):
             bot.send_document(admin_id, file, disable_notification=True)
 
 
-@bot.message_handler(content_types=['text'])
 def log(message):
     print(str(message.from_user.username) + " " + message.text)
 
 
 @bot.message_handler(commands=['start', 'help'])
 def start(message):
+    log(message)
     bot.send_message(message.chat.id, "Write / to see commands")
 
 
 @bot.message_handler(commands=['subscribe'])
 def subscribe(message):
+    log(message)
     if add_id(message.chat.id):
         photo = get_photo("cat")
         send_photo(message.chat.id, photo, message.chat.id,
@@ -171,6 +172,7 @@ def subscribe(message):
 
 @bot.message_handler(commands=['unsubscribe'])
 def unsubscribe(message):
+    log(message)
     if delete_id(message.chat.id):
         bot.send_photo(message.chat.id, SAD_ID, "You are now not subscribed")
 
@@ -183,6 +185,7 @@ def unsubscribe(message):
 
 @bot.message_handler(commands=['cat'])
 def send_cat(message):
+    log(message)
     photo = get_photo("cat")
     send_photo(message.chat.id, photo, message.chat.id,
                error_message="Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.")
@@ -195,6 +198,7 @@ def send_cat(message):
 
 @bot.message_handler(commands=['admin'])
 def admin(message):
+    log(message)
     args = message.text.split(" ")[1:]
     command = args[0]
     if command == "imageall":
