@@ -7,50 +7,76 @@ from multiprocessing import *
 import schedule
 
 API_KEY = "1103395186:AAEjPT2Yo0Nc5KSGoJgYuDAbQdIXGTix0ys"
-bot = telebot.TeleBot(API_KEY, threaded=False)
 CREATOR_CHAT_ID = 377263029
 AUTHOR_MARK = "Photo by <a href=\"{0}?&utm_source=CatSender&utm_medium=referral\">{1}</a> on <a " \
               "href=\"https://unsplash.com/?utm_source=CatSender&utm_medium=referral\">Unsplash</a> "
 SAD_ID = "AgACAgIAAxkDAAIEtl6LASyDNzPq99scOMgDFK9niibeAAJQrDEbqYBZSARMTDqu88gxHILBDwAEAQADAgADbQADKmAGAAEYBA"
 
+pastebin_handler = None
+bot = telebot.TeleBot(API_KEY, threaded=False)
+
+
+# print(pastebin_handler.user_key)
 
 def get_photo(request):
     response = requests.get(
-        "https://api.unsplash.com/photos/random?client_id=xqeRzqIeuPGTeFeRtw3_WvrAiGuce6p4-eTU9BuWZUs&count=1&query=" + request)
+        "https://api.unsplash.com/photos/random?client_id=xqeRzqIeuPGTeFeRtw3_WvrAiGuce6p4-eTU9BuWZUs&count=1&query="
+        + request)
     if response.ok:
         photo_data = {}
         response = json.loads(response.text)
         response1 = response[0]["links"]["download_location"]
-        response2 = requests.get(response1 + "?client_id=xqeRzqIeuPGTeFeRtw3_WvrAiGuce6p4-eTU9BuWZUs")
+        requests.get(response1 + "?client_id=xqeRzqIeuPGTeFeRtw3_WvrAiGuce6p4-eTU9BuWZUs")
         response3 = response[0]["urls"]["regular"]
         response4 = requests.get(response3)
         photo_data["file"] = response4.content
         photo_data["username"] = response[0]["user"]["links"]["html"]
-        print(photo_data["username"])
         photo_data["name"] = response[0]["user"]["name"]
+        print("Photo got")
         return photo_data
     else:
         return {'file': None}
 
 
-def download_photo():
-    return get_photo("cat")
-
-
-def send_photo(chat_id, photo, error_chat_id, caption="", error_message=""):
-    if photo["file"] is not None:
-        return bot.send_photo(chat_id, photo["file"],
-                              caption + "\n" + AUTHOR_MARK.format(
-                                  photo["username"], photo["name"]),
-                              parse_mode="HTML").photo[0].file_id
+def get_gif(request):
+    response = requests.get(
+        "https://api.giphy.com/v1/gifs/random?api_key=Tne7LiT79HXXntOhyyXPzSDDuBAYMbJP&rating=G&tag=" + request)
+    if response.ok:
+        json_response = json.loads(response.text)
+        url = json_response["data"]["images"]["original"]["url"]
+        return requests.get(url).content
     else:
-        bot.send_message(chat_id, error_message)
+        return None
+
+
+def send_photo(chat_id, photo, error_chat_id, caption="", error_message="", from_unsplash=True):
+    if from_unsplash:
+        if photo["file"] is not None:
+            return bot.send_photo(chat_id, photo["file"],
+                                  caption + "\n" + AUTHOR_MARK.format(
+                                      photo["username"], photo["name"]),
+                                  parse_mode="HTML").photo[0].file_id
+        else:
+            bot.send_message(error_chat_id, error_message)
+            return "error"
+    else:
+        return bot.send_photo(chat_id, photo, caption).file_id
+
+
+def send_gif(chat_id, gif, error_chat_id, caption="", error_message=""):
+    if gif is not None:
+        bot.send_video_note(chat_id, gif)
+        bot.send_message(chat_id, caption + "\nPowered by GIPHY")
+        return "good"
+    else:
+        bot.send_message(error_chat_id, error_message)
         return "error"
 
 
 def scheduled_photo():
-    photo = download_photo()
+    photo = get_photo("cat")
     ids = get_ids()
+    file_id = "error"
     if len(ids) > 0:
         file_id = send_photo(ids[0], photo, ids[0], "Good morning!",
                              "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.However,have a nice "
@@ -59,20 +85,52 @@ def scheduled_photo():
     if file_id != "error":
         for chat_id in ids:
             send_photo(chat_id, photo, chat_id, "Good morning!",
-                       "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.However,have a nice "
+                       "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.However, have a nice "
                        "day!")
 
 
-def image_to_all(admin_id, caption="from admin with love"):
-    local_photo = get_photo("cat")
+def scheduled_gif():
+    gif_to_all(CREATOR_CHAT_ID,"Good night!")
+
+
+def image_to_all(admin_id, caption="from admin with love", file_id=None):
     ids = get_ids()
+    if file_id is None:
+        local_photo = get_photo("cat")
+
+        if len(ids) > 0:
+            file_id = send_photo(admin_id, local_photo, admin_id, caption,
+                                 "something went wrong")
+        if str(admin_id) + "\n" in ids:
+            ids.remove(str(admin_id) + "\n")
+        if file_id != "error":
+            for chat_id in ids:
+                send_photo(chat_id, local_photo, chat_id, caption)
+    else:
+        local_photo = file_id
+
+        if len(ids) > 0:
+            file_id = send_photo(admin_id, local_photo, admin_id, caption,
+                                 "something went wrong", False)
+        if str(admin_id) + "\n" in ids:
+            ids.remove(str(admin_id) + "\n")
+        if file_id != "error":
+            for chat_id in ids:
+                send_photo(chat_id, local_photo, chat_id, caption, from_unsplash=False)
+
+
+def gif_to_all(admin_id, caption):
+    ids = get_ids()
+    gif = get_gif("cat")
+    file_id = "error"
     if len(ids) > 0:
-        file_id = send_photo(admin_id, local_photo, admin_id, caption,
-                             "something went wrong")
-    ids.remove(str(admin_id) + "\n")
+        file_id = send_gif(admin_id, gif, admin_id, caption,
+                           "something went wrong")
+    if str(admin_id) + "\n" in ids:
+        ids.remove(str(admin_id) + "\n")
     if file_id != "error":
         for chat_id in ids:
-            send_photo(chat_id, local_photo, chat_id, caption)
+            send_gif(chat_id, gif, chat_id, caption)
 
 
 def text_to_all(admin_id, text):
@@ -96,13 +154,13 @@ class ScheduleMessage():
 
 
 def get_ids():
-    db.get_ids()
+    pastebin_handler.get_ids("id")
     with open("id.txt", "r+") as file:
         return file.readlines()
 
 
 def add_id(chat_id):
-    db.get_ids()
+    pastebin_handler.get_ids("id")
     flag = False
     with open("id.txt", "r+") as file:
         ids = file.readlines()
@@ -112,12 +170,12 @@ def add_id(chat_id):
         else:
             flag = False
     if flag:
-        db.write_to_pastebin()
+        pastebin_handler.write_to_pastebin("id")
     return flag
 
 
 def delete_id(chat_id):
-    db.get_ids()
+    pastebin_handler.get_ids("id")
     flag = False
     with open("id.txt", "r") as file:
         ids = file.readlines()
@@ -132,12 +190,12 @@ def delete_id(chat_id):
     else:
         flag = False
     if flag:
-        db.write_to_pastebin()
+        pastebin_handler.write_to_pastebin("id")
     return flag
 
 
 def send_ids(admin_id):
-    db.get_ids()
+    pastebin_handler.get_ids("id")
     with open("id.txt") as file:
         if len(file.read()) > 3:
             bot.send_document(admin_id, file, disable_notification=True)
@@ -186,6 +244,7 @@ def unsubscribe(message):
 @bot.message_handler(commands=['cat'])
 def send_cat(message):
     log(message)
+    bot.send_chat_action(message.chat.id, "upload_photo")
     photo = get_photo("cat")
     send_photo(message.chat.id, photo, message.chat.id,
                error_message="Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.")
@@ -196,22 +255,36 @@ def send_cat(message):
     #                      "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.")
 
 
+@bot.message_handler(commands=['gif'])
+def send_cat_gif(message):
+    log(message)
+    bot.send_chat_action(message.chat.id, "upload_photo")
+    gif = get_gif("cat")
+    send_gif(message.chat.id, gif, message.chat.id, error_message="Some error happened")
+
+
 @bot.message_handler(commands=['admin'])
 def admin(message):
     log(message)
     args = message.text.split(" ")[1:]
     command = args[0]
+
     if command == "imageall":
         image_to_all(message.chat.id, (" ".join(args[1:])))
+
     elif command == "textall":
         text_to_all(message.chat.id, (" ".join(args[1:])))
     elif command == "count":
         count(message.chat.id)
+    elif command == "gifall":
+        gif_to_all(message.chat.id, (" ".join(args[1:])))
 
 
 schedule.every().day.at("04:00").do(scheduled_photo)
+schedule.every().day.at("19:00").do(scheduled_gif)
 
 if __name__ == '__main__':
+    pastebin_handler = db.Pastebin()
     ScheduleMessage.start_process()
     try:
         bot.polling(none_stop=True)
