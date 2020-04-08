@@ -43,7 +43,7 @@ def get_gif(request):
         "https://api.giphy.com/v1/gifs/random?api_key=Tne7LiT79HXXntOhyyXPzSDDuBAYMbJP&rating=G&tag=" + request)
     if response.ok:
         json_response = json.loads(response.text)
-        url = json_response["data"]["images"]["original"]["url"]
+        url = json_response["data"]["images"]["downsized"]["url"]
         return requests.get(url).content
     else:
         return None
