@@ -14,6 +14,14 @@ SAD_ID = "AgACAgIAAxkDAAIEtl6LASyDNzPq99scOMgDFK9niibeAAJQrDEbqYBZSARMTDqu88gxHI
 
 pastebin_handler = None
 bot = telebot.TeleBot(API_KEY, threaded=False)
+item_cat = telebot.types.KeyboardButton('/cat')
+item_gif = telebot.types.KeyboardButton('/gif')
+MARKUP = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,row_width=2,one_time_keyboard=False)
+MARKUP.add(item_cat, item_gif)
+
+item = telebot.types.KeyboardButton('/subscribe')
+MARKUP_HELLO = telebot.types.ReplyKeyboardMarkup(one_time_keyboard=True,row_width=1,resize_keyboard=True)
+MARKUP_HELLO.add(item)
 
 
 # print(pastebin_handler.user_key)
@@ -44,7 +52,7 @@ def get_gif(request):
     if response.ok:
         json_response = json.loads(response.text)
         url = json_response["data"]["images"]["downsized"]["url"]
-        return requests.get(url).content
+        return url
     else:
         return None
 
@@ -55,21 +63,21 @@ def send_photo(chat_id, photo, error_chat_id, caption="", error_message="", from
             return bot.send_photo(chat_id, photo["file"],
                                   caption + "\n" + AUTHOR_MARK.format(
                                       photo["username"], photo["name"]),
-                                  parse_mode="HTML").photo[0].file_id
+                                  parse_mode="HTML",reply_markup=MARKUP).photo[0].file_id
         else:
-            bot.send_message(error_chat_id, error_message)
+            bot.send_message(error_chat_id, error_message,reply_markup=MARKUP)
             return "error"
     else:
-        return bot.send_photo(chat_id, photo, caption).file_id
+        return bot.send_photo(chat_id, photo, caption,reply_markup=MARKUP).file_id
 
 
 def send_gif(chat_id, gif, error_chat_id, caption="", error_message=""):
     if gif is not None:
-        bot.send_video_note(chat_id, gif)
-        bot.send_message(chat_id, caption + "\nPowered by GIPHY")
+        bot.send_animation(chat_id, gif,caption=caption + "\nPowered by GIPHY")
+        # bot.send_message(chat_id, caption + "\nPowered by GIPHY",reply_markup=MARKUP)
         return "good"
     else:
-        bot.send_message(error_chat_id, error_message)
+        bot.send_message(error_chat_id, error_message,reply_markup=MARKUP)
         return "error"
 
 
@@ -93,7 +101,7 @@ def scheduled_gif():
     gif_to_all(CREATOR_CHAT_ID,"Good night!")
 
 
-def image_to_all(admin_id, caption="from admin with love", file_id=None):
+def image_to_all(admin_id, caption="From admin with love", file_id=None):
     ids = get_ids()
     if file_id is None:
         local_photo = get_photo("cat")
@@ -135,11 +143,11 @@ def gif_to_all(admin_id, caption):
 
 def text_to_all(admin_id, text):
     for chat_id in get_ids():
-        bot.send_message(chat_id, text)
+        bot.send_message(chat_id, text,reply_markup=MARKUP)
 
 
 def count(admin_id):
-    bot.send_message(admin_id, len(get_ids()))
+    bot.send_message(admin_id, len(get_ids()),reply_markup=MARKUP)
 
 
 class ScheduleMessage():
@@ -208,7 +216,7 @@ def log(message):
 @bot.message_handler(commands=['start', 'help'])
 def start(message):
     log(message)
-    bot.send_message(message.chat.id, "Write / to see commands")
+    bot.send_message(message.chat.id, "Hello.",reply_markup=MARKUP_HELLO)
 
 
 @bot.message_handler(commands=['subscribe'])
@@ -221,11 +229,11 @@ def subscribe(message):
                    "Subscribed to cat photo at 9AM every day.")
 
         bot.send_message(CREATOR_CHAT_ID, "@" + str(message.from_user.username) + " sub",
-                         disable_notification=True)
+                         disable_notification=True,reply_markup=MARKUP)
         # send_ids(CREATOR_CHAT_ID)
 
     else:
-        bot.send_message(message.chat.id, "You are already subscribed")
+        bot.send_message(message.chat.id, "You are already subscribed",reply_markup=MARKUP)
 
 
 @bot.message_handler(commands=['unsubscribe'])
@@ -235,10 +243,10 @@ def unsubscribe(message):
         bot.send_photo(message.chat.id, SAD_ID, "You are now not subscribed")
 
         bot.send_message(CREATOR_CHAT_ID, "@" + str(message.from_user.username) + " unsub",
-                         disable_notification=True)
+                         disable_notification=True,reply_markup=MARKUP)
         # send_ids(CREATOR_CHAT_ID)
     else:
-        bot.send_message(message.chat.id, "You were not subscribed")
+        bot.send_message(message.chat.id, "You were not subscribed",reply_markup=MARKUP)
 
 
 @bot.message_handler(commands=['cat'])
