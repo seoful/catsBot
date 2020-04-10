@@ -63,7 +63,7 @@ def send_photo(chat_id, photo, error_chat_id, caption="", error_message="", from
             return bot.send_photo(chat_id, photo["file"],
                                   caption + "\n" + AUTHOR_MARK.format(
                                       photo["username"], photo["name"]),
-                                  parse_mode="HTML",reply_markup=MARKUP).photo[0].file_id
+                                  parse_mode="HTML").photo[0].file_id
         else:
             bot.send_message(error_chat_id, error_message,reply_markup=MARKUP)
             return "error"
@@ -73,7 +73,7 @@ def send_photo(chat_id, photo, error_chat_id, caption="", error_message="", from
 
 def send_gif(chat_id, gif, error_chat_id, caption="", error_message=""):
     if gif is not None:
-        bot.send_animation(chat_id, gif,caption=caption + "\nPowered by GIPHY")
+        bot.send_animation(chat_id, gif,caption=caption + "\nPowered by GIPHY",reply_markup=MARKUP)
         # bot.send_message(chat_id, caption + "\nPowered by GIPHY",reply_markup=MARKUP)
         return "good"
     else:
