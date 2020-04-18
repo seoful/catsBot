@@ -3,6 +3,7 @@ import telebot
 import json
 import time
 import db
+from threading import Thread, enumerate
 from multiprocessing import *
 import schedule
 
@@ -16,17 +17,22 @@ pastebin_handler = None
 bot = telebot.TeleBot(API_KEY, threaded=False)
 item_cat = telebot.types.KeyboardButton('/cat')
 item_gif = telebot.types.KeyboardButton('/gif')
-MARKUP = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,row_width=2,one_time_keyboard=False)
+MARKUP = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2, one_time_keyboard=False)
 MARKUP.add(item_cat, item_gif)
 
 item = telebot.types.KeyboardButton('/subscribe')
-MARKUP_HELLO = telebot.types.ReplyKeyboardMarkup(one_time_keyboard=True,row_width=1,resize_keyboard=True)
+
+MARKUP_HELLO = telebot.types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
 MARKUP_HELLO.add(item)
+MARKUP_HELLO.row(item_cat, item_gif)
+
+threads = []
 
 
 # print(pastebin_handler.user_key)
 
 def get_photo(request):
+    print("getting photo")
     response = requests.get(
         "https://api.unsplash.com/photos/random?client_id=xqeRzqIeuPGTeFeRtw3_WvrAiGuce6p4-eTU9BuWZUs&count=1&query="
         + request)
@@ -43,41 +49,70 @@ def get_photo(request):
         print("Photo got")
         return photo_data
     else:
+        print("error photo")
         return {'file': None}
 
 
 def get_gif(request):
+    print("getting gif")
     response = requests.get(
         "https://api.giphy.com/v1/gifs/random?api_key=Tne7LiT79HXXntOhyyXPzSDDuBAYMbJP&rating=G&tag=" + request)
     if response.ok:
         json_response = json.loads(response.text)
         url = json_response["data"]["images"]["downsized"]["url"]
+        print('gif got')
         return url
     else:
+        print("error gif")
         return None
+
+
+def send_photo_in_thread(chat_id, error_chat_id, error_message=""):
+    thread = Thread(target=sending_photo_in_thread, args=(chat_id, error_chat_id, error_message))
+    thread.start()
+    threads.append(thread)
+
+
+def sending_photo_in_thread(chat_id, error_chat_id, error_message=""):
+    photo = get_photo('cat')
+    send_photo(chat_id, photo, error_chat_id, error_message=error_message)
 
 
 def send_photo(chat_id, photo, error_chat_id, caption="", error_message="", from_unsplash=True):
     if from_unsplash:
         if photo["file"] is not None:
-            return bot.send_photo(chat_id, photo["file"],
-                                  caption + "\n" + AUTHOR_MARK.format(
-                                      photo["username"], photo["name"]),
-                                  parse_mode="HTML").photo[0].file_id
+            try:
+                return bot.send_photo(chat_id, photo["file"],
+                                      caption + "\n" + AUTHOR_MARK.format(
+                                          photo["username"], photo["name"]),
+                                      parse_mode="HTML").photo[0].file_id
+            except:
+                bot.send_message(chat_id, "Some error occurred. Try again.")
         else:
-            bot.send_message(error_chat_id, error_message,reply_markup=MARKUP)
+            bot.send_message(error_chat_id, error_message)
             return "error"
     else:
-        return bot.send_photo(chat_id, photo, caption,reply_markup=MARKUP).file_id
+        return bot.send_photo(chat_id, photo, caption).file_id
+
+
+def send_gif_in_thread(chat_id, error_chat_id, error_message=""):
+    thread = Thread(target=sending_gif_in_thread, args=(chat_id, error_chat_id, error_message))
+    thread.start()
+    threads.append(thread)
+
+
+def sending_gif_in_thread(chat_id, error_chat_id, error_message=""):
+    gif = get_gif('cat')
+    send_gif(chat_id, gif, error_chat_id, error_message=error_message)
 
 
 def send_gif(chat_id, gif, error_chat_id, caption="", error_message=""):
     if gif is not None:
-        bot.send_animation(chat_id, gif,caption=caption + "\nPowered by GIPHY",reply_markup=MARKUP)
+        bot.send_animation(chat_id, gif, caption=caption + "\nPowered by GIPHY")
         # bot.send_message(chat_id, caption + "\nPowered by GIPHY",reply_markup=MARKUP)
         return "good"
     else:
-        bot.send_message(error_chat_id, error_message,reply_markup=MARKUP)
+        bot.send_message(error_chat_id, error_message)
         return "error"
 
 
@@ -87,18 +122,18 @@ def scheduled_photo():
     file_id = "error"
     if len(ids) > 0:
         file_id = send_photo(ids[0], photo, ids[0], "Good morning!",
-                             "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.However,have a nice "
+                             "Error getting photo.Sorry.\nHowever,have a nice "
                              "day!")
     ids.pop(0)
     if file_id != "error":
         for chat_id in ids:
             send_photo(chat_id, photo, chat_id, "Good morning!",
-                       "Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.However, have a nice "
+                       "Error getting photo.Sorry.\nHowever, have a nice "
                        "day!")
 
 
 def scheduled_gif():
-    gif_to_all(CREATOR_CHAT_ID,"Good night!")
+    gif_to_all(CREATOR_CHAT_ID, "Good night!")
 
 
 def image_to_all(admin_id, caption="From admin with love", file_id=None):
@@ -143,11 +178,11 @@ def gif_to_all(admin_id, caption):
 
 def text_to_all(admin_id, text):
     for chat_id in get_ids():
-        bot.send_message(chat_id, text,reply_markup=MARKUP)
+        bot.send_message(chat_id, text, reply_markup=MARKUP)
 
 
 def count(admin_id):
-    bot.send_message(admin_id, len(get_ids()),reply_markup=MARKUP)
+    bot.send_message(admin_id, len(get_ids()), reply_markup=MARKUP)
 
 
 class ScheduleMessage():
@@ -213,10 +248,17 @@ def log(message):
     print(str(message.from_user.username) + " " + message.text)
 
 
+def check_threads():
+    for thread in threads:
+        if not thread.is_alive():
+            thread.join()
+
+
 @bot.message_handler(commands=['start', 'help'])
 def start(message):
     log(message)
-    bot.send_message(message.chat.id, "Hello.",reply_markup=MARKUP_HELLO)
+    bot.send_message(message.chat.id, "Hello.", reply_markup=MARKUP_HELLO)
+    check_threads()
 
 
 @bot.message_handler(commands=['subscribe'])
@@ -225,37 +267,41 @@ def subscribe(message):
     if add_id(message.chat.id):
         photo = get_photo("cat")
         send_photo(message.chat.id, photo, message.chat.id,
-                   "Thank you for subscribing to cat photo at 9AM every day.",
-                   "Subscribed to cat photo at 9AM every day.")
+                   "Thank you.",
+                   "Thank you")
+        bot.send_message(message.chat.id, 'You are now subscribed', reply_markup=MARKUP)
 
         bot.send_message(CREATOR_CHAT_ID, "@" + str(message.from_user.username) + " sub",
-                         disable_notification=True,reply_markup=MARKUP)
+                         disable_notification=True)
         # send_ids(CREATOR_CHAT_ID)
 
     else:
-        bot.send_message(message.chat.id, "You are already subscribed",reply_markup=MARKUP)
+        bot.send_message(message.chat.id, "You are already subscribed", reply_markup=MARKUP)
+    check_threads()
 
 
 @bot.message_handler(commands=['unsubscribe'])
 def unsubscribe(message):
     log(message)
     if delete_id(message.chat.id):
-        bot.send_photo(message.chat.id, SAD_ID, "You are now not subscribed")
+        bot.send_photo(message.chat.id, SAD_ID, "You are now not subscribed", reply_markup=MARKUP_HELLO)
 
         bot.send_message(CREATOR_CHAT_ID, "@" + str(message.from_user.username) + " unsub",
-                         disable_notification=True,reply_markup=MARKUP)
+                         disable_notification=True)
         # send_ids(CREATOR_CHAT_ID)
     else:
-        bot.send_message(message.chat.id, "You were not subscribed",reply_markup=MARKUP)
+        bot.send_message(message.chat.id, "You were not subscribed", reply_markup=MARKUP_HELLO)
+    check_threads()
 
 
 @bot.message_handler(commands=['cat'])
 def send_cat(message):
     log(message)
     bot.send_chat_action(message.chat.id, "upload_photo")
-    photo = get_photo("cat")
-    send_photo(message.chat.id, photo, message.chat.id,
-               error_message="Error getting photo.Sorry( Maybe,we`ve run out of requests. Wait for an hour.")
+
+    send_photo_in_thread(message.chat.id, message.chat.id,
+                         error_message="Error getting photo. Try again")
+    check_threads()
     # if photo is not None:
     #     bot.send_photo(message.chat.id, photo)
     # else:
@@ -267,8 +313,8 @@ def send_cat(message):
 def send_cat_gif(message):
     log(message)
     bot.send_chat_action(message.chat.id, "upload_photo")
-    gif = get_gif("cat")
-    send_gif(message.chat.id, gif, message.chat.id, error_message="Some error happened")
+    send_gif_in_thread(message.chat.id, message.chat.id, error_message="Some error happened")
+    check_threads()
 
 
 @bot.message_handler(commands=['admin'])
@@ -286,6 +332,7 @@ def admin(message):
         count(message.chat.id)
     elif command == "gifall":
         gif_to_all(message.chat.id, (" ".join(args[1:])))
+    check_threads()
 
 
 schedule.every().day.at("04:00").do(scheduled_photo)
