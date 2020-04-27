@@ -243,32 +243,6 @@ def admin(message):
         ids.remove(message.chat.id)
         for id in ids:
             send_gif_by_file_id(id, gif, m)
-    elif command == 'start':
-        l = [348400632,
-             379697872,
-             486420525,
-             405604496,
-             460187408,
-             256554535,
-             432757640,
-             413088395,
-             457408035,
-             491230672,
-             569021825,
-             127348025,
-             437275821,
-             363724806,
-             388649178,
-             245658683,
-             423577489,
-             331194061,
-             377263029,
-             425364439]
-        for id in l:
-            bot.send_message(id, "The bot was updated.\n"
-                                 "To make him working, please write /start")
-            bot.send_message(id, "Otherwise, it won`t be working")
-            bot.send_message(id, "Try it NOW!!!!!!")
 
 
 @bot.message_handler(commands=['settings'])
