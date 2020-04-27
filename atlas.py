@@ -18,7 +18,7 @@ class Atlas:
                                    'username': msg.from_user.username,
                                    'id': msg.from_user.id,
                                    'timezone': "+00:00",
-                                   'morning': False,
+                                   'morning': True,
                                    'morning_type': 'photo',
                                    'morning_local_time': datetime(2020, 1, 1, 9, 0),
                                    'morning_utc_time': datetime(2020, 1, 1, 6, 0),
