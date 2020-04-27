@@ -1,4 +1,5 @@
 requests
 pyTelegramBotAPI
-schedule
 lxml
+pymongo
+dnspython
