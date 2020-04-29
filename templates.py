@@ -52,7 +52,7 @@ class Templates:
 
     def TIMEZONE_SETTINGS_INLINE(self, chat_id):
         timezone = self.atlas.timezone(chat_id)
-        text = 'Your timezone is set to *MSK ' + timezone + '*'
+        text = 'Your timezone is set to *MSK' + timezone + '*'
 
         change_btn = InlineKeyboardButton('Change timezone', callback_data='change_timezone')
         back_btn = InlineKeyboardButton('<<Back to settings', callback_data='back_to_settings')

@@ -223,8 +223,16 @@ def admin(message):
         bot.send_message(message.chat.id, "You are not an admin.")
         return
     if command == 'stats':
-        stats = atlas.count_enable()
-        bot.send_message(message.chat.id, 'Morning: {0}\nEvening: {1}'.format(stats['morning'], stats['evening']))
+        mailing = atlas.count_enable()
+        queries = atlas.count_queries()
+        num = atlas.count()
+        bot.send_message(message.chat.id,
+                         'Users: {2}\nMorning: {0}\nEvening: {1}\nPhoto requests: {3}\nGif requests: {4}'.format(
+                             mailing['morning'], mailing['evening'], num, queries['photos'], queries['gifs']))
+    elif command == 'all':
+        all = atlas.all()
+        for user in all:
+            bot.send_message(message.chat.id, user)
     elif command == 'textall':
         m = ' '.join(args[1:])
         for id in atlas.get_ids():

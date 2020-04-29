@@ -152,11 +152,30 @@ class Atlas:
         return {'morning': morning,
                 'evening': evening}
 
+    def count_queries(self):
+        photos = gifs = 0
+        cursor = self.users.find()
+        for user in cursor:
+            photos += user['photo_queries']
+            gifs += user['gif_queries']
+        return {'photos': photos,
+                'gifs': gifs}
+
+    def count(self):
+        return self.users.count()
+
     def count_personal(self, chat_id):
         photos = self.users.find_one({'chat_id': chat_id})['photo_queries']
         gifs = self.users.find_one({'chat_id': chat_id})['gif_queries']
         return {'photos': photos,
                 'gifs': gifs}
+
+    def all(self):
+        all = self.users.find()
+        l = []
+        for user in all:
+            l.append(str(user))
+        return l
 
     def get_ids(self):
         cursor = self.users.find()
