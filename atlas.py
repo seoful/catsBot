@@ -171,18 +171,18 @@ class Atlas:
                 'gifs': gifs}
 
     def all(self):
-        all = self.users.find()
+        users = self.users.find()
         l = []
-        for user in all:
+        for user in users:
             l.append(str(user))
         return l
 
     def get_ids(self):
         cursor = self.users.find()
-        l = []
+        chat_ids = []
         for user in cursor:
-            l.append(user['chat_id'])
-        return l
+            chat_ids.append(user['chat_id'])
+        return chat_ids
 
     def get_ids_for_sender(self):
         now = self.__normalize_date(datetime.now())

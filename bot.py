@@ -1,7 +1,6 @@
 import requests
 import telebot
 import json
-from datetime import datetime
 from atlas import Atlas
 from time import sleep
 from threading import Thread
@@ -11,7 +10,6 @@ API_KEY = "1103395186:AAEjPT2Yo0Nc5KSGoJgYuDAbQdIXGTix0ys"
 CREATOR_CHAT_ID = 377263029
 AUTHOR_MARK = "Photo by <a href=\"{0}?&utm_source=CatSender&utm_medium=referral\">{1}</a> on <a " \
               "href=\"https://unsplash.com/?utm_source=CatSender&utm_medium=referral\">Unsplash</a> "
-SAD_ID = "AgACAgIAAxkDAAIEtl6LASyDNzPq99scOMgDFK9niibeAAJQrDEbqYBZSARMTDqu88gxHILBDwAEAQADAgADbQADKmAGAAEYBA"
 
 atlas = None
 templates = None
@@ -98,8 +96,8 @@ def send_gif_from_giphy(request, chat_id, caption=""):
 def send_gif_by_file_id(chat_id, file_id, caption=""):
     if file_id is not None:
         try:
-            msg = bot.send_animation(chat_id, file_id, caption=caption + "\nPowered by GIPHY",
-                                     reply_markup=templates.COMMAND_KEYBOARD())
+            bot.send_animation(chat_id, file_id, caption=caption + "\nPowered by GIPHY",
+                               reply_markup=templates.COMMAND_KEYBOARD())
         except:
             bot.send_message(chat_id, "Error sending gif.Try again.", reply_markup=templates.COMMAND_KEYBOARD())
 
@@ -128,9 +126,9 @@ class Sender(Thread):
             for i in evening:
                 chat_id = i['chat_id']
                 if i['type'] == 'photo':
-                    send_photo_unsplash('cat sleep', chat_id, 'Good night!')
+                    send_photo_unsplash('cat', chat_id, 'Good night!')
                 else:
-                    send_gif_from_giphy('cat sleep', chat_id, 'Good night!')
+                    send_gif_from_giphy('cat', chat_id, 'Good night!')
 
             sleep(sleep_time)
 
@@ -138,39 +136,39 @@ class Sender(Thread):
 @bot.message_handler(commands=['start'])
 def start(message):
     log(message)
-    id = message.chat.id
+    chat_id = message.chat.id
     if atlas.add_user(message):
-        bot.send_chat_action(id, "typing")
-        send_photo_unsplash('cat', id, "Hello")
+        bot.send_chat_action(chat_id, "typing")
+        send_photo_unsplash('cat', chat_id, "Hello")
         sleep(1)
-        bot.send_message(id, "Cats are cool, you know. Let's begin!")
-        bot.send_chat_action(id, "typing")
+        bot.send_message(chat_id, "Cats are cool, you know. Let's begin!")
+        bot.send_chat_action(chat_id, "typing")
         sleep(3)
-        bot.send_message(id, 'Now, you will receive some settings that you may change.')
-        bot.send_chat_action(id, "typing")
+        bot.send_message(chat_id, 'Now, you will receive some settings that you may change.')
+        bot.send_chat_action(chat_id, "typing")
         sleep(3)
-        bot.send_message(id, 'First af all, modify your timezone.')
-        bot.send_chat_action(id, "typing")
+        bot.send_message(chat_id, 'First af all, modify your timezone.')
+        bot.send_chat_action(chat_id, "typing")
         sleep(3)
-        bot.send_message(id, 'Also, you can turn on cat mailing, modify mailing time and '
-                             'decide whether to get photo or gif every day')
-        bot.send_chat_action(id, "typing")
+        bot.send_message(chat_id, 'Also, you can turn on cat mailing, modify mailing time and '
+                                  'decide whether to get photo or gif every day')
+        bot.send_chat_action(chat_id, "typing")
         sleep(3)
-        bot.send_message(id, 'Later you will be able to open settings by typing /settings '
-                             'and see commands by typing /help')
-        bot.send_chat_action(id, "typing")
+        bot.send_message(chat_id, 'Later you will be able to open settings by typing /settings '
+                                  'and see commands by typing /help')
+        bot.send_chat_action(chat_id, "typing")
         sleep(3)
         msg = templates.SETTINGS_INLINE()
-        bot.send_message(id, msg['text'], reply_markup=msg['keyboard'])
+        bot.send_message(chat_id, msg['text'], reply_markup=msg['keyboard'])
     else:
-        bot.send_message(id,
+        bot.send_message(chat_id,
                          'You have already used this command.\n'
                          'To see commands, type /help\n'
                          'To modify bot, type /settings.')
 
 
 @bot.message_handler(commands=['help'])
-def help(message):
+def send_help(message):
     log(message)
     bot.send_message(message.chat.id, "Here are commands you can use:\n"
                                       "/help - opens this menu\n"
@@ -230,27 +228,29 @@ def admin(message):
                          'Users: {2}\nMorning: {0}\nEvening: {1}\nPhoto requests: {3}\nGif requests: {4}'.format(
                              mailing['morning'], mailing['evening'], num, queries['photos'], queries['gifs']))
     elif command == 'all':
-        all = atlas.all()
-        for user in all:
-            bot.send_message(message.chat.id, user)
+        users = atlas.all()
+        with open("users.txt", 'w') as f:
+            for user in users:
+                f.write(user)
+            bot.send_document(message.chat.id, f)
     elif command == 'textall':
         m = ' '.join(args[1:])
-        for id in atlas.get_ids():
-            bot.send_message(id, m)
+        for chat_id in atlas.get_ids():
+            bot.send_message(chat_id, m)
     elif command == 'imageall':
         m = ' '.join(args[1:])
         photo = send_photo_unsplash('cat', message.chat.id, m)
         ids = atlas.get_ids()
         ids.remove(message.chat.id)
-        for id in ids:
-            send_photo_by_file_id(id, photo, m)
+        for chat_id in ids:
+            send_photo_by_file_id(chat_id, photo, m)
     elif command == 'gifall':
         m = ' '.join(args[1:])
         gif = send_gif_from_giphy('cat', message.chat.id, m)
         ids = atlas.get_ids()
         ids.remove(message.chat.id)
-        for id in ids:
-            send_gif_by_file_id(id, gif, m)
+        for chat_id in ids:
+            send_gif_by_file_id(chat_id, gif, m)
 
 
 @bot.message_handler(commands=['settings'])
