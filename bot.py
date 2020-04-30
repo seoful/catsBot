@@ -229,7 +229,7 @@ def admin(message):
                              mailing['morning'], mailing['evening'], num, queries['photos'], queries['gifs']))
     elif command == 'all':
         users = atlas.all()
-        with open("users.txt", 'w') as f:
+        with open("users.txt", '+') as f:
             for user in users:
                 f.write(user)
             bot.send_document(message.chat.id, f)
