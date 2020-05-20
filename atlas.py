@@ -32,6 +32,26 @@ class Atlas:
         except DuplicateKeyError:
             return False
 
+    def add_group(self, msg):
+        try:
+            self.users.insert_one({'chat_id': msg.chat.id,
+                                   'id': -1,
+                                   'chat_name': msg.chat.title,
+                                   'timezone': "+00:00",
+                                   'morning': False,
+                                   'morning_type': 'photo',
+                                   'morning_local_time': datetime(2020, 1, 1, 9, 0),
+                                   'morning_utc_time': datetime(2020, 1, 1, 6, 0),
+                                   'evening': False,
+                                   'evening_type': 'gif',
+                                   'evening_local_time': datetime(2020, 1, 1, 23, 0),
+                                   'evening_utc_time': datetime(2020, 1, 1, 20, 0),
+                                   'photo_queries': 0,
+                                   'gif_queries': 0})
+            return True
+        except DuplicateKeyError:
+            return False
+
     def change_time(self, chat_id, query_type, time):
         time = self.parse_time(time)
         if time is False:
@@ -170,15 +190,22 @@ class Atlas:
         return {'photos': photos,
                 'gifs': gifs}
 
-    def all(self):
-        users = self.users.find()
+    def all_users(self):
+        users = self.users.find({'id': {'$ne': -1}})
         l = []
         for user in users:
             l.append(str(user))
         return l
 
+    def all_groups(self):
+        groups = self.users.find({'id': {'eq': -1}})
+        l = []
+        for user in groups:
+            l.append(str(user))
+        return l
+
     def get_ids(self):
-        cursor = self.users.find()
+        cursor = self.users.find({'id': {'$ne': -1}})
         chat_ids = []
         for user in cursor:
             chat_ids.append(user['chat_id'])

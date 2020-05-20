@@ -43,23 +43,21 @@ def send_photo_unsplash(request, chat_id, caption=""):
     photo = get_photo(request)
     if photo['file'] is not None:
         try:
-            msg = bot.send_photo(chat_id, photo['file'], caption + photo['caption'], parse_mode='HTML',
-                                 reply_markup=templates.COMMAND_KEYBOARD())
+            msg = bot.send_photo(chat_id, photo['file'], caption + photo['caption'], parse_mode='HTML')
             return {'file_id': msg.photo[0].file_id,
                     'caption': photo['caption']}
         except:
-            bot.send_message(chat_id, "Error sending photo.Try again.", reply_markup=templates.COMMAND_KEYBOARD())
+            bot.send_message(chat_id, "Error sending photo.Try again.")
             return {'file_id': None}
     else:
-        bot.send_message(chat_id, "Error getting photo.Try again.", reply_markup=templates.COMMAND_KEYBOARD())
+        bot.send_message(chat_id, "Error getting photo.Try again.")
         return {'file_id': None}
 
 
 def send_photo_by_file_id(chat_id, photo, caption=""):
     if photo['file_id'] is not None:
         try:
-            msg = bot.send_photo(chat_id, photo['file_id'], caption + photo['caption'], parse_mode='HTML',
-                                 reply_markup=templates.COMMAND_KEYBOARD())
+            msg = bot.send_photo(chat_id, photo['file_id'], caption + photo['caption'], parse_mode='HTML')
         except:
             bot.send_message(chat_id, "Error sending photo.Try again.")
 
@@ -82,24 +80,22 @@ def send_gif_from_giphy(request, chat_id, caption=""):
     gif = get_gif(request)
     if gif is not None:
         try:
-            msg = bot.send_animation(chat_id, gif, caption=caption + "\nPowered by GIPHY",
-                                     reply_markup=templates.COMMAND_KEYBOARD())
+            msg = bot.send_animation(chat_id, gif, caption=caption + "\nPowered by GIPHY")
             return msg.animation.file_id
         except:
-            bot.send_message(chat_id, "Error sending gif.Try again.", reply_markup=templates.COMMAND_KEYBOARD())
+            bot.send_message(chat_id, "Error sending gif.Try again.")
             return None
     else:
-        bot.send_message(chat_id, "Error getting gif.Try again.", reply_markup=templates.COMMAND_KEYBOARD())
+        bot.send_message(chat_id, "Error getting gif.Try again.")
         return None
 
 
 def send_gif_by_file_id(chat_id, file_id, caption=""):
     if file_id is not None:
         try:
-            bot.send_animation(chat_id, file_id, caption=caption + "\nPowered by GIPHY",
-                               reply_markup=templates.COMMAND_KEYBOARD())
+            bot.send_animation(chat_id, file_id, caption=caption + "\nPowered by GIPHY")
         except:
-            bot.send_message(chat_id, "Error sending gif.Try again.", reply_markup=templates.COMMAND_KEYBOARD())
+            bot.send_message(chat_id, "Error sending gif.Try again.")
 
 
 def log(message):
@@ -137,34 +133,43 @@ class Sender(Thread):
 def start(message):
     log(message)
     chat_id = message.chat.id
-    if atlas.add_user(message):
-        bot.send_chat_action(chat_id, "typing")
-        send_photo_unsplash('cat', chat_id, "Hello")
-        sleep(1)
-        bot.send_message(chat_id, "Cats are cool, you know. Let's begin!")
-        bot.send_chat_action(chat_id, "typing")
-        sleep(3)
-        bot.send_message(chat_id, 'Now, you will receive some settings that you may change.')
-        bot.send_chat_action(chat_id, "typing")
-        sleep(3)
-        bot.send_message(chat_id, 'First af all, modify your timezone.')
-        bot.send_chat_action(chat_id, "typing")
-        sleep(3)
-        bot.send_message(chat_id, 'Also, you can turn on cat mailing, modify mailing time and '
-                                  'decide whether to get photo or gif every day')
-        bot.send_chat_action(chat_id, "typing")
-        sleep(3)
-        bot.send_message(chat_id, 'Later you will be able to open settings by typing /settings '
-                                  'and see commands by typing /help')
-        bot.send_chat_action(chat_id, "typing")
-        sleep(3)
-        msg = templates.SETTINGS_INLINE()
-        bot.send_message(chat_id, msg['text'], reply_markup=msg['keyboard'])
-    else:
-        bot.send_message(chat_id,
-                         'You have already used this command.\n'
-                         'To see commands, type /help\n'
-                         'To modify bot, type /settings.')
+    if message.chat.type == 'private':
+        if atlas.add_user(message):
+            bot.send_chat_action(chat_id, "typing")
+            send_photo_unsplash('cat', chat_id, "Hello")
+            sleep(1)
+            bot.send_message(chat_id, "Cats are cool, you know. Let's begin!")
+            bot.send_chat_action(chat_id, "typing")
+            sleep(2)
+            bot.send_message(chat_id, 'Now, you will receive some settings that you may change.')
+            bot.send_chat_action(chat_id, "typing")
+            sleep(2)
+            bot.send_message(chat_id, 'First af all, modify your timezone.')
+            bot.send_chat_action(chat_id, "typing")
+            sleep(2)
+            bot.send_message(chat_id, 'Also, you can turn on cat mailing, modify mailing time and '
+                                      'decide whether to get photo or gif every day')
+            bot.send_chat_action(chat_id, "typing")
+            sleep(2)
+            bot.send_message(chat_id, 'Later you will be able to open settings by typing /settings '
+                                      'and see commands by typing /help')
+            bot.send_chat_action(chat_id, "typing")
+            sleep(2)
+            bot.send_message(chat_id, 'Here is a keyboard for you', reply_markup=templates.COMMAND_KEYBOARD())
+            sleep(2)
+            msg = templates.SETTINGS_INLINE()
+            bot.send_message(chat_id, msg['text'], reply_markup=msg['keyboard'])
+        else:
+            bot.send_message(chat_id,
+                             'You have already used this command.\n'
+                             'To see commands, type /help\n'
+                             'To modify bot, type /settings.')
+    elif message.chat.type == 'group' or message.chat.type == 'supergroup':
+        if atlas.add_group(message):
+            send_photo_unsplash('cat', chat_id, "Hello")
+            sleep(1)
+            msg = templates.SETTINGS_INLINE()
+            bot.send_message(chat_id, msg['text'], reply_markup=msg['keyboard'])
 
 
 @bot.message_handler(commands=['help'])
@@ -228,11 +233,13 @@ def admin(message):
                          'Users: {2}\nMorning: {0}\nEvening: {1}\nPhoto requests: {3}\nGif requests: {4}'.format(
                              mailing['morning'], mailing['evening'], num, queries['photos'], queries['gifs']))
     elif command == 'all':
-        users = atlas.all()
-        with open("users.txt", 'w+') as f:
-            for user in users:
-                f.write(user)
-            bot.send_document(message.chat.id, f)
+        users = atlas.all_users()
+        for user in users:
+            bot.send_message(message.chat.id, user)
+        groups = atlas.all_groups()
+        for group in groups:
+            bot.send_message(message.chat.id, group)
+
     elif command == 'textall':
         m = ' '.join(args[1:])
         for chat_id in atlas.get_ids():
@@ -264,8 +271,8 @@ def send_settings(message):
 def stats(message):
     log(message)
     statistics = atlas.count_personal(message.chat.id)
-    bot.send_message(message.chat.id, "So far, you have received {0} photos and {1} gifs.".format(statistics['photos'],
-                                                                                                  statistics['gifs']))
+    bot.send_message(message.chat.id, "So far, you have asked for {0} photos and {1} gifs.".format(statistics['photos'],
+                                                                                                   statistics['gifs']))
 
 
 @bot.callback_query_handler(func=lambda c: c.data == 'back_to_settings')
