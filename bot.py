@@ -275,8 +275,25 @@ def stats(message):
                                                                                                    statistics['gifs']))
 
 
+def check_admin_rights(c: telebot.types.CallbackQuery) -> bool:
+    if c.message.chat.type == 'private':
+        return True
+
+    admins = bot.get_chat_administrators(c.message.chat.id)
+    for i in range(len(admins)):
+        admins[i] = admins[i].user.id
+
+    if c.from_user.id not in admins:
+        bot.answer_callback_query(c.id, 'You are not an admin to do this.')
+        return False
+    else:
+        return True
+
+
 @bot.callback_query_handler(func=lambda c: c.data == 'back_to_settings')
 def back_to_settings(c: telebot.types.CallbackQuery):
+    if not check_admin_rights(c):
+        return
     message = c.message
     msg = templates.SETTINGS_INLINE()
     bot.answer_callback_query(c.id)
@@ -285,6 +302,8 @@ def back_to_settings(c: telebot.types.CallbackQuery):
 
 @bot.callback_query_handler(func=lambda c: c.data == 'morning' or c.data == 'evening')
 def sender_settings(c: telebot.types.CallbackQuery):
+    if not check_admin_rights(c):
+        return
     message = c.message
     msg = templates.SENDER_SETTINGS_INLINE(message.chat.id, c.data)
     bot.answer_callback_query(c.id)
@@ -294,6 +313,8 @@ def sender_settings(c: telebot.types.CallbackQuery):
 
 @bot.callback_query_handler(func=lambda c: c.data == 'timezone')
 def timezone_settings(c: telebot.types.CallbackQuery):
+    if not check_admin_rights(c):
+        return
     message = c.message
     msg = templates.TIMEZONE_SETTINGS_INLINE(message.chat.id)
     bot.answer_callback_query(c.id)
@@ -303,6 +324,8 @@ def timezone_settings(c: telebot.types.CallbackQuery):
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('change_timezone'))
 def change_timezone_menu(c: telebot.types.CallbackQuery):
+    if not check_admin_rights(c):
+        return
     message = c.message
     msg = templates.TIMEZONES_INLINE()
     bot.answer_callback_query(c.id)
@@ -312,6 +335,8 @@ def change_timezone_menu(c: telebot.types.CallbackQuery):
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('timezone_change'))
 def change_timezone(c: telebot.types.CallbackQuery):
+    if not check_admin_rights(c):
+        return
     message = c.message
     timezone = c.data.split('_')[2]
     atlas.change_timezone(message.chat.id, timezone)
@@ -323,6 +348,8 @@ def change_timezone(c: telebot.types.CallbackQuery):
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('disable'))
 def disable(c: telebot.types.CallbackQuery):
+    if not check_admin_rights(c):
+        return
     message = c.message
     when = c.data.split('_')[1]
     atlas.enable_or_disable(message.chat.id, when, False)
@@ -334,6 +361,8 @@ def disable(c: telebot.types.CallbackQuery):
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('enable'))
 def enable(c: telebot.types.CallbackQuery):
+    if not check_admin_rights(c):
+        return
     message = c.message
     when = c.data.split('_')[1]
     atlas.enable_or_disable(message.chat.id, when, True)
@@ -345,6 +374,8 @@ def enable(c: telebot.types.CallbackQuery):
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('set'))
 def change(c: telebot.types.CallbackQuery):
+    if not check_admin_rights(c):
+        return
     message = c.message
     when = c.data.split('_')[1]
     query_type = c.data.split('_')[2]
@@ -357,6 +388,8 @@ def change(c: telebot.types.CallbackQuery):
 
 @bot.callback_query_handler(func=lambda c: c.data == 'change_morning' or c.data == 'change_evening')
 def choose_hour(c: telebot.types.CallbackQuery):
+    if not check_admin_rights(c):
+        return
     message = c.message
     when = c.data.split('_')[1]
     keyboard = templates.HOURS_INLINE(when)
@@ -366,6 +399,8 @@ def choose_hour(c: telebot.types.CallbackQuery):
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('hour'))
 def change_hour(c: telebot.types.CallbackQuery):
+    if not check_admin_rights(c):
+        return
     message = c.message
     when = c.data.split('_')[1]
     h = c.data.split('_')[2]
@@ -376,6 +411,8 @@ def change_hour(c: telebot.types.CallbackQuery):
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('go_to_min'))
 def go_to_min(c: telebot.types.CallbackQuery):
+    if not check_admin_rights(c):
+        return
     message = c.message
     when = c.data.split('_')[3]
     keyboard = templates.MINUTES_INLINE(when)
@@ -385,6 +422,8 @@ def go_to_min(c: telebot.types.CallbackQuery):
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('go_to_hour'))
 def go_to_hour(c: telebot.types.CallbackQuery):
+    if not check_admin_rights(c):
+        return
     message = c.message
     when = c.data.split('_')[3]
     keyboard = templates.HOURS_INLINE(when)
@@ -394,6 +433,8 @@ def go_to_hour(c: telebot.types.CallbackQuery):
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith('min'))
 def change_minute(c: telebot.types.CallbackQuery):
+    if not check_admin_rights(c):
+        return
     message = c.message
     when = c.data.split('_')[1]
     m = c.data.split('_')[2]
