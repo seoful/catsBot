@@ -5,7 +5,6 @@ from atlas import Atlas
 from time import sleep
 from threading import Thread
 from templates import Templates
-from diplomas import DiplomaChecker
 
 API_KEY = "1103395186:AAEjPT2Yo0Nc5KSGoJgYuDAbQdIXGTix0ys"
 CREATOR_CHAT_ID = 377263029
@@ -14,7 +13,6 @@ AUTHOR_MARK = "Photo by <a href=\"{0}?&utm_source=CatSender&utm_medium=referral\
 
 atlas = None
 templates = None
-diploma_checker = None
 bot = telebot.TeleBot(API_KEY)
 
 
@@ -129,20 +127,6 @@ class Sender(Thread):
                     send_gif_from_giphy('cat', chat_id, 'Good night!')
 
             sleep(sleep_time)
-
-
-class DiplomaSender(Thread):
-    def __init__(self):
-        Thread.__init__(self)
-        self.daemon = True
-
-    def run(self) -> None:
-        sleep_time = 3600
-
-        if diploma_checker.content_has_changed():
-            bot.send_message(CREATOR_CHAT_ID, "Maybe, diplomas are available now!!!!!!!!")
-
-        sleep(sleep_time)
 
 
 @bot.message_handler(commands=['start'])
@@ -462,11 +446,8 @@ def change_minute(c: telebot.types.CallbackQuery):
 if __name__ == '__main__':
     atlas = Atlas()
     templates = Templates(atlas)
-    diploma_checker = DiplomaChecker()
     sender = Sender()
     sender.start()
-    diploma_sender = DiplomaSender()
-    diploma_sender.start()
     try:
         bot.polling(none_stop=True)
     except:

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from pymongo.errors import DuplicateKeyError
 
 
+
 class Atlas:
     def __init__(self):
         self.client = MongoClient(
