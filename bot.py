@@ -46,20 +46,23 @@ def send_photo_unsplash(request, chat_id, caption=""):
             msg = bot.send_photo(chat_id, photo['file'], caption + photo['caption'], parse_mode='HTML')
             return {'file_id': msg.photo[0].file_id,
                     'caption': photo['caption']}
-        except:
-            bot.send_message(chat_id, "Error sending photo.Try again.")
+        except telebot.apihelper.ApiException:
+            pass
             return {'file_id': None}
     else:
-        bot.send_message(chat_id, "Error getting photo.Try again.")
-        return {'file_id': None}
+        try:
+            bot.send_message(chat_id, "Error getting photo.Try again.")
+            return {'file_id': None}
+        except telebot.apihelper.ApiException:
+            pass
 
 
 def send_photo_by_file_id(chat_id, photo, caption=""):
     if photo['file_id'] is not None:
         try:
             msg = bot.send_photo(chat_id, photo['file_id'], caption + photo['caption'], parse_mode='HTML')
-        except:
-            bot.send_message(chat_id, "Error sending photo.Try again.")
+        except telebot.apihelper.ApiException:
+            pass
 
 
 def get_gif(request):
@@ -82,20 +85,23 @@ def send_gif_from_giphy(request, chat_id, caption=""):
         try:
             msg = bot.send_animation(chat_id, gif, caption=caption + "\nPowered by GIPHY")
             return msg.animation.file_id
-        except:
-            bot.send_message(chat_id, "Error sending gif.Try again.")
+        except telebot.apihelper.ApiException:
+            pass
             return None
     else:
-        bot.send_message(chat_id, "Error getting gif.Try again.")
-        return None
+        try:
+            bot.send_message(chat_id, "Error getting gif.Try again.")
+            return None
+        except telebot.apihelper.ApiException:
+            pass
 
 
 def send_gif_by_file_id(chat_id, file_id, caption=""):
     if file_id is not None:
         try:
             bot.send_animation(chat_id, file_id, caption=caption + "\nPowered by GIPHY")
-        except:
-            bot.send_message(chat_id, "Error sending gif.Try again.")
+        except telebot.apihelper.ApiException:
+            pass
 
 
 def log(message):
