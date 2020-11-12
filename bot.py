@@ -160,6 +160,9 @@ def start(message):
             sleep(2)
             msg = templates.SETTINGS_INLINE()
             bot.send_message(chat_id, msg['text'], reply_markup=msg['keyboard'])
+            bot.send_message(chat_id,"If some bug occur, write to @seoful")
+            bot.send_chat_action(chat_id, "typing")
+
         else:
             bot.send_message(chat_id,
                              'You have already used this command.\n'
