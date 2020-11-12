@@ -146,7 +146,7 @@ def start(message):
             bot.send_chat_action(chat_id, "typing")
             send_photo_unsplash('cat', chat_id, "Hello")
             sleep(1)
-            bot.send_message(chat_id, "Cats are cool, you know. Let's begin!")
+            bot.send_message(chat_id, "Caaaattttssss!!!!!")
             bot.send_chat_action(chat_id, "typing")
             sleep(2)
             bot.send_message(chat_id, 'Now, you will receive some settings that you may change.')

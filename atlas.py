@@ -25,7 +25,7 @@ class Atlas:
                                    'morning_type': 'photo',
                                    'morning_local_time': datetime(2020, 1, 1, 9, 0),
                                    'morning_utc_time': datetime(2020, 1, 1, 6, 0),
-                                   'evening': False,
+                                   'evening': True,
                                    'evening_type': 'gif',
                                    'evening_local_time': datetime(2020, 1, 1, 23, 0),
                                    'evening_utc_time': datetime(2020, 1, 1, 20, 0),
