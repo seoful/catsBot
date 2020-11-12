@@ -65,10 +65,12 @@ def send_photo_by_file_id(chat_id, photo, caption=""):
             pass
 
 
-def get_gif(request):
+def get_gif(request, chat_id):
     print("getting gif")
+    giphy_id = atlas.giphy_id(chat_id)
     response = requests.get(
-        "https://api.giphy.com/v1/gifs/random?api_key=Tne7LiT79HXXntOhyyXPzSDDuBAYMbJP&rating=G&tag=" + request)
+        "https://api.giphy.com/v1/gifs/random?api_key=Tne7LiT79HXXntOhyyXPzSDDuBAYMbJP&rating=G&tag=" + request
+        + "&random_id=" + giphy_id)
     if response.ok:
         json_response = json.loads(response.text)
         url = json_response["data"]["images"]["downsized"]["url"]
@@ -80,7 +82,7 @@ def get_gif(request):
 
 
 def send_gif_from_giphy(request, chat_id, caption=""):
-    gif = get_gif(request)
+    gif = get_gif(request, chat_id)
     if gif is not None:
         try:
             msg = bot.send_animation(chat_id, gif, caption=caption + "\nPowered by GIPHY")

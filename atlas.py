@@ -1,7 +1,9 @@
+import json
+
+import requests
 from pymongo import MongoClient
 from datetime import datetime, timedelta
 from pymongo.errors import DuplicateKeyError
-
 
 
 class Atlas:
@@ -28,7 +30,9 @@ class Atlas:
                                    'evening_local_time': datetime(2020, 1, 1, 23, 0),
                                    'evening_utc_time': datetime(2020, 1, 1, 20, 0),
                                    'photo_queries': 0,
-                                   'gif_queries': 0})
+                                   'gif_queries': 0,
+                                   'giphy_id': self.get_giphy_id(),
+                                   })
             return True
         except DuplicateKeyError:
             return False
@@ -48,10 +52,23 @@ class Atlas:
                                    'evening_local_time': datetime(2020, 1, 1, 23, 0),
                                    'evening_utc_time': datetime(2020, 1, 1, 20, 0),
                                    'photo_queries': 0,
-                                   'gif_queries': 0})
+                                   'gif_queries': 0,
+                                   'giphy_id': self.get_giphy_id(),
+                                   })
             return True
         except DuplicateKeyError:
             return False
+
+    def get_giphy_id(self):
+        response = requests.get(
+            "https://api.giphy.com/v1/randomid?api_key=Tne7LiT79HXXntOhyyXPzSDDuBAYMbJP&rating=G")
+        if response.ok:
+            json_response = json.loads(response.text)
+            id = json_response["data"]["random_id"]
+            return id
+        else:
+            print("error giphy id")
+            return None
 
     def change_time(self, chat_id, query_type, time):
         time = self.parse_time(time)
@@ -159,6 +176,9 @@ class Atlas:
 
     def increment(self, chat_id, query_type):
         self.users.update_one({'chat_id': chat_id}, {"$inc": {query_type + '_queries': 1}})
+
+    def giphy_id(self, chat_id):
+        return self.users.find_one({"chat_id": chat_id})["giphy_id"]
 
     def delete_user(self, chat_id):
         if self.users.count({'chat_id': chat_id}) != 0:
