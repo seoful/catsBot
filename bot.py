@@ -1,13 +1,15 @@
 import requests
 import telebot
 import json
+import os
 from atlas import Atlas
 from time import sleep
 from threading import Thread
 from templates import Templates
 
-API_KEY = "1103395186:AAEjPT2Yo0Nc5KSGoJgYuDAbQdIXGTix0ys"
-CREATOR_CHAT_ID = 377263029
+
+API_KEY = os.environ.get("TOKEN")
+CREATOR_CHAT_ID = os.environ.get("CREATOR_ID")
 AUTHOR_MARK = "Photo by <a href=\"{0}?&utm_source=CatSender&utm_medium=referral\">{1}</a> on <a " \
               "href=\"https://unsplash.com/?utm_source=CatSender&utm_medium=referral\">Unsplash</a> "
 

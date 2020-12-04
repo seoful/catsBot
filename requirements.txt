@@ -1,5 +1,5 @@
-requests
+requests~=2.23.0
 pyTelegramBotAPI
 lxml
-pymongo
+pymongo~=3.10.1
 dnspython

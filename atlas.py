@@ -1,4 +1,5 @@
 import json
+import os
 
 import requests
 from pymongo import MongoClient
@@ -8,8 +9,9 @@ from pymongo.errors import DuplicateKeyError
 
 class Atlas:
     def __init__(self):
-        self.client = MongoClient(
-            'mongodb+srv://seoful:florotp57@subscribers-rucm4.mongodb.net/test?retryWrites=true&w=majority')
+        mongo_token = os.environ.get("MONGO")
+
+        self.client = MongoClient(mongo_token)
         self.db = self.client['bot']
         self.users = self.db['users']
 
