@@ -226,44 +226,49 @@ def send_kitten_gif(message):
 @bot.message_handler(commands=['admin'])
 def admin(message):
     log(message)
-    args = message.text.split(" ")[1:]
-    command = args[0]
     if message.chat.id != CREATOR_CHAT_ID:
         bot.send_message(message.chat.id, "You are not an admin.")
         return
-    if command == 'stats':
-        mailing = atlas.count_enable()
-        queries = atlas.count_queries()
-        num = atlas.count()
-        bot.send_message(message.chat.id,
-                         'Users: {2}\nMorning: {0}\nEvening: {1}\nPhoto requests: {3}\nGif requests: {4}'.format(
-                             mailing['morning'], mailing['evening'], num, queries['photos'], queries['gifs']))
-    elif command == 'all':
-        users = atlas.all_users()
-        for user in users:
-            bot.send_message(message.chat.id, user)
-        groups = atlas.all_groups()
-        for group in groups:
-            bot.send_message(message.chat.id, group)
+    args = message.text.split(" ")[1:]
 
-    elif command == 'textall':
-        m = ' '.join(args[1:])
-        for chat_id in atlas.get_ids():
-            bot.send_message(chat_id, m)
-    elif command == 'imageall':
-        m = ' '.join(args[1:])
-        photo = send_photo_unsplash('cat', message.chat.id, m)
-        ids = atlas.get_ids()
-        ids.remove(message.chat.id)
-        for chat_id in ids:
-            send_photo_by_file_id(chat_id, photo, m)
-    elif command == 'gifall':
-        m = ' '.join(args[1:])
-        gif = send_gif_from_giphy('cat', message.chat.id, m)
-        ids = atlas.get_ids()
-        ids.remove(message.chat.id)
-        for chat_id in ids:
-            send_gif_by_file_id(chat_id, gif, m)
+    try:
+        command = args[0]
+        if command == 'stats':
+            mailing = atlas.count_enable()
+            queries = atlas.count_queries()
+            num = atlas.count()
+            bot.send_message(message.chat.id,
+                             'Users: {2}\nMorning: {0}\nEvening: {1}\nPhoto requests: {3}\nGif requests: {4}'.format(
+                                 mailing['morning'], mailing['evening'], num, queries['photos'], queries['gifs']))
+        elif command == 'all':
+            users = atlas.all_users()
+            for user in users:
+                bot.send_message(message.chat.id, user)
+            groups = atlas.all_groups()
+            for group in groups:
+                bot.send_message(message.chat.id, group)
+
+        elif command == 'textall':
+            m = ' '.join(args[1:])
+            for chat_id in atlas.get_ids():
+                bot.send_message(chat_id, m)
+        elif command == 'imageall':
+            m = ' '.join(args[1:])
+            photo = send_photo_unsplash('cat', message.chat.id, m)
+            ids = atlas.get_ids()
+            ids.remove(message.chat.id)
+            for chat_id in ids:
+                send_photo_by_file_id(chat_id, photo, m)
+        elif command == 'gifall':
+            m = ' '.join(args[1:])
+            gif = send_gif_from_giphy('cat', message.chat.id, m)
+            ids = atlas.get_ids()
+            ids.remove(message.chat.id)
+            for chat_id in ids:
+                send_gif_by_file_id(chat_id, gif, m)
+    except:
+        bot.send_message(message.chat.id, "Incorrect command")
+
 
 
 @bot.message_handler(commands=['settings'])
