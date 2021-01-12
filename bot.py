@@ -9,7 +9,7 @@ from templates import Templates
 
 
 API_KEY = os.environ.get("TOKEN")
-CREATOR_CHAT_ID = os.environ.get("CREATOR_ID")
+CREATOR_CHAT_ID = int(os.environ.get("CREATOR_ID"))
 AUTHOR_MARK = "Photo by <a href=\"{0}?&utm_source=CatSender&utm_medium=referral\">{1}</a> on <a " \
               "href=\"https://unsplash.com/?utm_source=CatSender&utm_medium=referral\">Unsplash</a> "
 
