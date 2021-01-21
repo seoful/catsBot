@@ -7,7 +7,6 @@ from time import sleep
 from threading import Thread
 from templates import Templates
 
-
 API_KEY = os.environ.get("TOKEN")
 CREATOR_CHAT_ID = int(os.environ.get("CREATOR_ID"))
 AUTHOR_MARK = "Photo by <a href=\"{0}?&utm_source=CatSender&utm_medium=referral\">{1}</a> on <a " \
@@ -108,6 +107,13 @@ def send_gif_by_file_id(chat_id, file_id, caption=""):
             pass
 
 
+def check_group_existence(chat_id) -> bool:
+    if not atlas.check_group(chat_id):
+        bot.send_message(chat_id, "Before using the bot, please type /start")
+        return False
+    return True
+
+
 def log(message):
     print(str(message.from_user.username) + " " + message.text)
 
@@ -162,7 +168,7 @@ def start(message):
             sleep(2)
             msg = templates.SETTINGS_INLINE()
             bot.send_message(chat_id, msg['text'], reply_markup=msg['keyboard'])
-            bot.send_message(chat_id,"If some bug occur, write to @seoful")
+            bot.send_message(chat_id, "If some bug occur, write to @seoful")
             bot.send_chat_action(chat_id, "typing")
 
         else:
@@ -181,46 +187,51 @@ def start(message):
 @bot.message_handler(commands=['help'])
 def send_help(message):
     log(message)
-    bot.send_message(message.chat.id, "Here are commands you can use:\n"
-                                      "/help - opens this menu\n"
-                                      "/settings - opens settings menu\n"
-                                      "/cat - sends you a photo of a cat\n"
-                                      "/kitten - sends you a photo of a kitten\n"
-                                      "/gif - sends you a gif with a cat\n"
-                                      "/gif_kitten - sends you a gif with a kitten\n"
-                                      "/statistics - sends you a little of your statistics")
+    if check_group_existence(message.chat.id):
+        bot.send_message(message.chat.id, "Here are commands you can use:\n"
+                                          "/help - opens this menu\n"
+                                          "/settings - opens settings menu\n"
+                                          "/cat - sends you a photo of a cat\n"
+                                          "/kitten - sends you a photo of a kitten\n"
+                                          "/gif - sends you a gif with a cat\n"
+                                          "/gif_kitten - sends you a gif with a kitten\n"
+                                          "/statistics - sends you a little of your statistics")
 
 
 @bot.message_handler(commands=['cat'])
 def send_cat(message):
     log(message)
-    bot.send_chat_action(message.chat.id, "upload_photo")
-    send_photo_unsplash('cat', message.chat.id, )
-    atlas.increment(message.chat.id, 'photo')
+    if check_group_existence(message.chat.id):
+        bot.send_chat_action(message.chat.id, "upload_photo")
+        send_photo_unsplash('cat', message.chat.id, )
+        atlas.increment(message.chat.id, 'photo')
 
 
 @bot.message_handler(commands=['kitten'])
 def send_kitten(message):
     log(message)
-    bot.send_chat_action(message.chat.id, "upload_photo")
-    send_photo_unsplash('kitten', message.chat.id)
-    atlas.increment(message.chat.id, 'photo')
+    if check_group_existence(message.chat.id):
+        bot.send_chat_action(message.chat.id, "upload_photo")
+        send_photo_unsplash('kitten', message.chat.id)
+        atlas.increment(message.chat.id, 'photo')
 
 
 @bot.message_handler(commands=['gif'])
 def send_cat_gif(message):
     log(message)
-    bot.send_chat_action(message.chat.id, "upload_photo")
-    send_gif_from_giphy('cat', message.chat.id)
-    atlas.increment(message.chat.id, 'gif')
+    if check_group_existence(message.chat.id):
+        bot.send_chat_action(message.chat.id, "upload_photo")
+        send_gif_from_giphy('cat', message.chat.id)
+        atlas.increment(message.chat.id, 'gif')
 
 
 @bot.message_handler(commands=['gif_kitten'])
 def send_kitten_gif(message):
     log(message)
-    bot.send_chat_action(message.chat.id, "upload_photo")
-    send_gif_from_giphy('kitten', message.chat.id)
-    atlas.increment(message.chat.id, 'gif')
+    if check_group_existence(message.chat.id):
+        bot.send_chat_action(message.chat.id, "upload_photo")
+        send_gif_from_giphy('kitten', message.chat.id)
+        atlas.increment(message.chat.id, 'gif')
 
 
 @bot.message_handler(commands=['admin'])
@@ -270,20 +281,22 @@ def admin(message):
         bot.send_message(message.chat.id, "Incorrect command")
 
 
-
 @bot.message_handler(commands=['settings'])
 def send_settings(message):
     log(message)
-    msg = templates.SETTINGS_INLINE()
-    bot.send_message(message.chat.id, msg['text'], reply_markup=msg['keyboard'])
+    if check_group_existence(message.chat.id):
+        msg = templates.SETTINGS_INLINE()
+        bot.send_message(message.chat.id, msg['text'], reply_markup=msg['keyboard'])
 
 
 @bot.message_handler(commands=['statistics'])
 def stats(message):
     log(message)
-    statistics = atlas.count_personal(message.chat.id)
-    bot.send_message(message.chat.id, "So far, you have asked for {0} photos and {1} gifs.".format(statistics['photos'],
-                                                                                                   statistics['gifs']))
+    if check_group_existence(message.chat.id):
+        statistics = atlas.count_personal(message.chat.id)
+        bot.send_message(message.chat.id,
+                         "So far, you have asked for {0} photos and {1} gifs.".format(statistics['photos'],
+                                                                                      statistics['gifs']))
 
 
 def check_admin_rights(c: telebot.types.CallbackQuery) -> bool:

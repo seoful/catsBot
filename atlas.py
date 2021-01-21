@@ -296,3 +296,6 @@ class Atlas:
 
         except:
             return False
+
+    def check_group(self, chat_id):
+        return self.users.count({'chat_id': chat_id}) > 0
