@@ -11,6 +11,7 @@ API_KEY = os.environ.get("TOKEN")
 CREATOR_CHAT_ID = int(os.environ.get("CREATOR_ID"))
 AUTHOR_MARK = "Photo by <a href=\"{0}?&utm_source=CatSender&utm_medium=referral\">{1}</a> on <a " \
               "href=\"https://unsplash.com/?utm_source=CatSender&utm_medium=referral\">Unsplash</a> "
+GIPHY_ID = os.environ.get("GIPHY_ID")
 
 atlas = None
 templates = None
@@ -20,7 +21,7 @@ bot = telebot.TeleBot(API_KEY)
 def get_photo(request):
     print("getting photo")
     response = requests.get(
-        "https://api.unsplash.com/photos/random?client_id=xqeRzqIeuPGTeFeRtw3_WvrAiGuce6p4-eTU9BuWZUs&count=1&query="
+        "https://api.unsplash.com/photos/random?client_id=" + GIPHY_ID + "&count=1&query="
         + request)
     if response.ok:
         response = json.loads(response.text)
