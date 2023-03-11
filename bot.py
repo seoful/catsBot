@@ -1,3 +1,4 @@
+from flask import Flask
 import requests
 import telebot
 import json
@@ -16,6 +17,8 @@ GIPHY_ID = os.environ.get("GIPHY_ID")
 atlas = None
 templates = None
 bot = telebot.TeleBot(API_KEY)
+
+app = Flask(__name__)
 
 
 def get_photo(request):
@@ -144,6 +147,11 @@ class Sender(Thread):
                     send_gif_from_giphy('cat', chat_id, 'Good night!')
 
             sleep(sleep_time)
+
+
+@app.route("/")
+def check_app():
+    return "OK"
 
 
 @bot.message_handler(commands=['start'])
@@ -473,6 +481,7 @@ if __name__ == '__main__':
     templates = Templates(atlas)
     sender = Sender()
     sender.start()
+    app.run(host="0.0.0.0", port=8080)
     try:
         bot.polling(none_stop=True)
     except:
