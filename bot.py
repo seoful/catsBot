@@ -12,7 +12,8 @@ API_KEY = os.environ.get("TOKEN")
 CREATOR_CHAT_ID = int(os.environ.get("CREATOR_ID"))
 AUTHOR_MARK = "Photo by <a href=\"{0}?&utm_source=CatSender&utm_medium=referral\">{1}</a> on <a " \
               "href=\"https://unsplash.com/?utm_source=CatSender&utm_medium=referral\">Unsplash</a> "
-GIPHY_ID = os.environ.get("GIPHY_ID")
+UNSPLASH_KEY = os.environ.get("UNSPLASH_KEY")
+GIPHY_KEY = os.environ.get("GIPHY_KEY")
 
 atlas = None
 templates = None
@@ -24,7 +25,7 @@ app = Flask(__name__)
 def get_photo(request):
     print("getting photo")
     response = requests.get(
-        "https://api.unsplash.com/photos/random?client_id=" + GIPHY_ID + "&count=1&query="
+        "https://api.unsplash.com/photos/random?client_id=" + UNSPLASH_KEY + "&count=1&query="
         + request)
     if response.ok:
         response = json.loads(response.text)
@@ -74,7 +75,7 @@ def get_gif(request, chat_id):
     print("getting gif")
     giphy_id = atlas.giphy_id(chat_id)
     response = requests.get(
-        "https://api.giphy.com/v1/gifs/random?api_key=Tne7LiT79HXXntOhyyXPzSDDuBAYMbJP&rating=G&tag=" + request
+        f"https://api.giphy.com/v1/gifs/random?api_key={GIPHY_KEY}&rating=G&tag=" + request
         + "&random_id=" + giphy_id)
     if response.ok:
         json_response = json.loads(response.text)
