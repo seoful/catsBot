@@ -1,8 +1,8 @@
-from flask import Flask
 import requests
 import telebot
 import json
 import os
+import healthcheck
 from atlas import Atlas
 from time import sleep
 from threading import Thread
@@ -15,11 +15,9 @@ AUTHOR_MARK = "Photo by <a href=\"{0}?&utm_source=CatSender&utm_medium=referral\
 UNSPLASH_KEY = os.environ.get("UNSPLASH_KEY")
 GIPHY_KEY = os.environ.get("GIPHY_KEY")
 
-atlas = None
-templates = None
+atlas = Atlas()
+templates = Templates(atlas)
 bot = telebot.TeleBot(API_KEY)
-
-app = Flask(__name__)
 
 
 def get_photo(request):
@@ -148,11 +146,6 @@ class Sender(Thread):
                     send_gif_from_giphy('cat', chat_id, 'Good night!')
 
             sleep(sleep_time)
-
-
-@app.route("/")
-def check_app():
-    return "OK"
 
 
 @bot.message_handler(commands=['start'])
@@ -477,13 +470,15 @@ def change_minute(c: telebot.types.CallbackQuery):
     bot.answer_callback_query(c.id, "Time is changed to " + time)
 
 
-if __name__ == '__main__':
-    atlas = Atlas()
-    templates = Templates(atlas)
+def main():
+    healthcheck.run()
     sender = Sender()
     sender.start()
-    app.run(host="0.0.0.0", port=8080)
     try:
         bot.polling(none_stop=True)
     except:
         pass
+
+
+if __name__ == '__main__':
+    main()
