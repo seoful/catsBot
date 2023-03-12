@@ -1,5 +1,4 @@
-requests~=2.23.0
-pyTelegramBotAPI
-lxml
-pymongo~=3.10.1
-dnspython
+Flask==2.2.3
+pymongo==3.10.1
+pyTelegramBotAPI==4.10.0
+requests==2.23.0
