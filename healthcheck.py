@@ -14,6 +14,6 @@ def check_app():
 def run():
     server = Process(target=lambda: app.run(host="0.0.0.0", port=8080))
     server.start()
-    sleep(10)
-    server.terminate()
-    server.join()
+    # sleep(10)
+    # server.terminate()
+    # server.join()
